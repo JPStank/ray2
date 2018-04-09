@@ -1,0 +1,97 @@
+# depslib dependency file v1.0
+1523205485 source:/home/josh/code/ray2/main.cpp
+	<cstdlib>
+	<stdlib.h>
+	<SDL2/SDL.h>
+	<thread>
+	<chrono>
+	<ctime>
+	"stb_image_write.h"
+	"scenes.h"
+
+1523054711 /home/josh/code/ray2/stb_image_write.h
+	<stdio.h>
+	<stdarg.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<assert.h>
+
+1523206035 /home/josh/code/ray2/scenes.h
+	"sphere.h"
+	"hitable_list.h"
+	"float.h"
+	"camera.h"
+	"material.h"
+	"bvh.h"
+	"aarect.h"
+	"box.h"
+	"constant_medium.h"
+	"stb_image.h"
+
+1523054711 /home/josh/code/ray2/sphere.h
+	"hitable.h"
+
+1523078196 /home/josh/code/ray2/hitable.h
+	"aabb.h"
+
+1523054711 /home/josh/code/ray2/aabb.h
+	"ray.h"
+
+1523054711 /home/josh/code/ray2/ray.h
+	"vec3.h"
+
+1523078228 /home/josh/code/ray2/vec3.h
+	<math.h>
+	<stdlib.h>
+	<iostream>
+	<random>
+	<float.h>
+
+1523054711 /home/josh/code/ray2/hitable_list.h
+	"hitable.h"
+
+1523054711 /home/josh/code/ray2/camera.h
+	"ray.h"
+
+1523075014 /home/josh/code/ray2/material.h
+	"vec3.h"
+	"texture.h"
+
+1523157179 /home/josh/code/ray2/texture.h
+	"perlin.h"
+
+1523054711 /home/josh/code/ray2/perlin.h
+	"vec3.h"
+
+1523054711 /home/josh/code/ray2/bvh.h
+	"hitable.h"
+	"aabb.h"
+
+1523078167 /home/josh/code/ray2/aarect.h
+	"hitable.h"
+	"ray.h"
+
+1523054711 /home/josh/code/ray2/box.h
+	"aarect.h"
+
+1523078067 /home/josh/code/ray2/constant_medium.h
+	"hitable.h"
+	"material.h"
+
+1523054711 /home/josh/code/ray2/stb_image.h
+	"stb_image.h"
+	<stdio.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdlib.h>
+	<string.h>
+	<limits.h>
+	<math.h>
+	<stdio.h>
+	<assert.h>
+	<stdint.h>
+	<emmintrin.h>
+	<intrin.h>
+	<arm_neon.h>
+

@@ -4,7 +4,8 @@
     #include <stdlib.h>
 #endif
 
-#include <SDL2/SDL.h>
+//#define SDL_MAIN_HANDLED
+#include <SDL.h>
 
 #include <thread>
 #include <chrono>
@@ -13,9 +14,10 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-
+#ifdef __cplusplus
+extern "C"
+#endif
 #include "scenes.h"
-
 struct global_state
 {
     int width, height, samples;
@@ -51,6 +53,9 @@ void worker(int begin, int end, int index_start)
 
             col /= float(g.samples);
             col = vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
+			if (col[0] > 1) col /= col[0];
+			if (col[1] > 1) col /= col[1];
+			if (col[2] > 1) col /= col[2];
             g.data[index++] = (unsigned char)(255.99*col[0]);
             g.data[index++] = (unsigned char)(255.99*col[1]);
             g.data[index++] = (unsigned char)(255.99*col[2]);
@@ -60,7 +65,6 @@ void worker(int begin, int end, int index_start)
     }
 }
 
-/* Moving Rectangle */
 int main(int argc, char *argv[])
 {
     srand((unsigned int)time(NULL));
@@ -79,11 +83,11 @@ int main(int argc, char *argv[])
         }
         else
         {
-            g.width = g.height = 256;
+            g.width = g.height = 512;
         }
 
-        vec3 origin(278,278,-800);
-        //vec3 origin(478, 278, -600);
+        //vec3 origin(278,278,-800);
+        vec3 origin(478, 278, -600);
         vec3 look(278, 278, 0);
 
         //vec3 origin(13, 2, 3);
@@ -93,10 +97,10 @@ int main(int argc, char *argv[])
         float vfov = 40;
         g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
 
-        g.samples = 100;
+        g.samples = 2000;
         g.colorFunc = color_emit_light;
 
-        cornell_box(&g.world);
+        final_scene(&g.world);
 
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
@@ -116,7 +120,7 @@ int main(int argc, char *argv[])
         g.data_size = g.width*g.height*4;
         g.data = new unsigned char[g.data_size];
 
-        g.thread_count = 16;
+        g.thread_count = 4;
 
         int slice = g.height/g.thread_count;
         int data_slice = g.data_size/g.thread_count;

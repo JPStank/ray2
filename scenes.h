@@ -14,6 +14,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+
+#include <iostream>
+
 vec3 color_emit_light(const ray& r, hitable* world, int depth)
 {
 	hit_record rec;
@@ -24,6 +27,11 @@ vec3 color_emit_light(const ray& r, hitable* world, int depth)
 		vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
 		if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered))
 			return emitted + attenuation*color_emit_light(scattered, world, depth + 1);
+		//else if (depth == 0 && (emitted.r() || emitted.g() || emitted.b()))
+		//{
+		//	emitted.make_unit_vector();
+		//	return emitted;
+		//}
 		else
 			return emitted;
     }
@@ -139,12 +147,12 @@ void cornell_box(hitable** ret)
 {
 	hitable** list = new hitable*[8];
 	int i = 0;
-	material* red = new diffuse_light(new constant_texture(vec3(0.65f, 0.05f, 0.05f)));
+	material* red = new diffuse_light(new constant_texture(vec3(2, 0.1f, 0.1f)));
 	material* white = new lambertian(new constant_texture(vec3(0.73f, 0.73f, 0.73f)));
-	material* green = new diffuse_light(new constant_texture(vec3(0.12f, 0.45f, 0.15f)));
-	material* blue = new diffuse_light(new constant_texture(vec3(0.12f, 0.25f, 5.75f)));
+	material* green = new diffuse_light(new constant_texture(vec3(.1, 2, .1)));
+	material* blue = new diffuse_light(new constant_texture(vec3(1, 1, 34)));
 	//material* grey = new lambertian(new constant_texture(vec3(0.12f, 0.12f, 0.15f)));
-	//material* light = new diffuse_light(new constant_texture(vec3(7, 7, 7)));
+	//material* light = new diffuse_light(new constant_texture(vec3(11, 11, 11)));
 	//int nx, ny, nn;
 	//unsigned char* tex_data = stbi_load("gun.jpg", &nx, &ny, &nn, 0);
 	//material* tex = new lambertian(new image_texture(tex_data, nx, ny));
@@ -196,7 +204,6 @@ void final_scene(hitable** ret)
     material *white = new lambertian( new constant_texture(vec3(0.73, 0.73, 0.73)) );
     material *ground = new lambertian( new constant_texture(vec3(0.48, 0.83, 0.53)) );
     int l = 0;
-    /*
     int b = 0;
     for (int i = 0; i < nb; i++)
     {
@@ -213,10 +220,8 @@ void final_scene(hitable** ret)
         }
     }
     list[l++] = new bvh_node(boxlist, b, 0, 1);
-    */
     material *light = new diffuse_light( new constant_texture(vec3(12, 12, 12)) );
     list[l++] = new xz_rect(123, 423, 147, 412, 554, light);
-    /*
     vec3 center(400, 400, 200);
     list[l++] = new moving_sphere(center, center+vec3(30, 0, 0), 0, 1, 50, new lambertian(new constant_texture(vec3(0.7, 0.3, 0.1))));
     list[l++] = new sphere(vec3(260, 150, 45), 50, new dielectric(1.5));
@@ -232,7 +237,6 @@ void final_scene(hitable** ret)
     list[l++] = new sphere(vec3(400,200, 400), 100, emat);
     texture *pertext = new noise_texture(0.1);
     list[l++] =  new sphere(vec3(220,280, 300), 80, new lambertian( pertext ));
-    */
     int ns = 1000;
     for (int j = 0; j < ns; j++) {
         boxlist2[j] = new sphere(vec3(165*rand48(), 165*rand48(), 165*rand48()), 10, white);

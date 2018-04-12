@@ -8,6 +8,7 @@
 #include <thread>
 #include <chrono>
 #include <ctime>
+#include <string>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -19,6 +20,7 @@ extern "C"
 #endif
 #else
 #include <SDL2/SDL.h>
+#include <sys/resource.h>
 #endif
 #include "scenes.h"
 struct global_state
@@ -30,12 +32,16 @@ struct global_state
     hitable* world;
     vec3 (*colorFunc)(const ray& r, hitable* world, int depth);
     camera* cam;
+    bool* thread_done;
+    std::string outputFile;
 };
 
 global_state g;
 
-void worker(int begin, int end, int index_start)
+void worker(int begin, int end, int index_start, int threadId)
 {
+    rusage usage;
+    getrusage(RUSAGE_THREAD, &usage);
     int index = index_start;
     for (int j = begin-1; j >= end; --j)
     {
@@ -66,6 +72,18 @@ void worker(int begin, int end, int index_start)
         }
         //std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+    getrusage(RUSAGE_THREAD, &usage);
+    std::cout << "Thread# " << threadId << " has finished. Took "<< usage.ru_stime.tv_sec << " seconds.\n";
+    g.thread_done[threadId] = true;
+}
+
+bool check_done()
+{
+    for (int i = 0; i < g.thread_count; ++i)
+    {
+        if (g.thread_done[i] == false) return false;
+    }
+    return true;
 }
 
 int main(int argc, char *argv[])
@@ -79,31 +97,35 @@ int main(int argc, char *argv[])
         SDL_Surface* surf;
         //int width, height;
 
-        if (argc == 3)
+        if (argc == 5)
         {
             g.width = atoi(argv[1]);
             g.height = atoi(argv[2]);
+            g.samples = atoi(argv[3]);
+            g.outputFile = argv[4];
         }
         else
         {
-            g.width = g.height = 1024;
+            g.width = g.height = 512;
+            g.samples = 300;
+            g.outputFile = "test.png";
         }
 
         //vec3 origin(278,278,-800);
-        vec3 origin(478, 278, -600);
-        vec3 look(278, 278, 0);
+        //vec3 origin(478, 278, -600);
+        //vec3 look(278, 278, 0);
 
-        //vec3 origin(13, 2, 3);
-        //vec3 look(0,0,0);
+        vec3 origin(13, 2, 3);
+        vec3 look(0,0,0);
         float focus = 10;
         float aperature = 0;
         float vfov = 40;
         g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
 
-        g.samples = 7777;
-        g.colorFunc = color_emit_light;
+        //g.samples = 7777;
+        g.colorFunc = color_ambient;
 
-        final_scene(&g.world);
+        random_scene(&g.world);
 
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
@@ -123,17 +145,28 @@ int main(int argc, char *argv[])
         g.data_size = g.width*g.height*4;
         g.data = new unsigned char[g.data_size];
 
-        g.thread_count = 8;
+        g.thread_count = (int)std::thread::hardware_concurrency();
+
+        if (g.thread_count == 0)
+        {
+            std::cout << "Unable to detect system threads. Using 2 threads.\n";
+            g.thread_count = 2;
+        }
+        else
+            std::cout << g.thread_count << " threads detected!\n";
+
+        g.thread_done = new bool[g.thread_count];
 
         int slice = g.height/g.thread_count;
         int data_slice = g.data_size/g.thread_count;
 
         for (int i = 0; i < g.thread_count; i++)
         {
+            g.thread_done[i] = false;
             int start = g.height - i*slice;
             int end = start - slice;
             int index = i*data_slice;
-            std::thread t(worker, start, end, index);
+            std::thread t(worker, start, end, index, i);
             t.detach();
             //worker(start, end, index);
         }
@@ -141,7 +174,7 @@ int main(int argc, char *argv[])
         surf = SDL_CreateRGBSurfaceFrom(g.data, g.width, g.height, 32, 4*g.width, 0xff, 0xff00, 0xff0000, 0xff000000);
         texture = SDL_CreateTextureFromSurface(renderer, surf);
 
-        while (1)
+        while (check_done() == false)
         {
             SDL_PollEvent(&event);
             if(event.type == SDL_QUIT)
@@ -157,8 +190,9 @@ int main(int argc, char *argv[])
             SDL_RenderCopy(renderer, texture, NULL, NULL);
             SDL_RenderPresent(renderer);
         }
+        std::cout << "All threads finished! Saving result at " << g.outputFile << std::endl;
 
-        stbi_write_png("test.png", g.width, g.height, 4, g.data, g.width*4);
+        stbi_write_png(g.outputFile.c_str(), g.width, g.height, 4, g.data, g.width*4);
         delete[] g.data;
 
         SDL_FreeSurface(surf);

@@ -73,7 +73,7 @@ void worker(int begin, int end, int index_start, int threadId)
         //std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     getrusage(RUSAGE_THREAD, &usage);
-    std::cout << "Thread# " << threadId << " has finished. Took "<< usage.ru_stime.tv_sec << " seconds.\n";
+    std::cout << "Thread# " << threadId << " has finished. Took "<< usage.ru_stime.tv_sec << "s" << usage.ru_stime.tv_usec / 1000 << "m.\n";
     g.thread_done[threadId] = true;
 }
 

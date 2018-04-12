@@ -4,8 +4,6 @@
     #include <stdlib.h>
 #endif
 
-//#define SDL_MAIN_HANDLED
-#include <SDL.h>
 
 #include <thread>
 #include <chrono>
@@ -14,8 +12,13 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#ifdef __WIN32__
+#include <SDL.h>
 #ifdef __cplusplus
 extern "C"
+#endif
+#else
+#include <SDL2/SDL.h>
 #endif
 #include "scenes.h"
 struct global_state
@@ -83,7 +86,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            g.width = g.height = 512;
+            g.width = g.height = 1024;
         }
 
         //vec3 origin(278,278,-800);
@@ -97,7 +100,7 @@ int main(int argc, char *argv[])
         float vfov = 40;
         g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
 
-        g.samples = 2000;
+        g.samples = 7777;
         g.colorFunc = color_emit_light;
 
         final_scene(&g.world);
@@ -120,7 +123,7 @@ int main(int argc, char *argv[])
         g.data_size = g.width*g.height*4;
         g.data = new unsigned char[g.data_size];
 
-        g.thread_count = 4;
+        g.thread_count = 8;
 
         int slice = g.height/g.thread_count;
         int data_slice = g.data_size/g.thread_count;

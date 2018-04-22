@@ -17,6 +17,25 @@
 
 #include <iostream>
 
+enum preset_scene {RANDOM, TWO_SPHERES, TWO_PERLIN, SIMPLE_LIGHT, CORNELL_BOX, CORNELL_SMOKE, FINAL, FINAL_RANDOM};
+
+struct global_state
+{
+    int width, height, samples;
+    unsigned char* data;
+    unsigned int data_size;
+    int thread_count;
+    hitable* world;
+    vec3 (*colorFunc)(const ray& r, hitable* world, int depth);
+    camera* cam;
+    bool* thread_done;
+    std::string outputFile;
+    preset_scene scene;
+};
+
+// maintained here for ease of assignment from scene funcs
+global_state g;
+
 vec3 color_emit_light(const ray& r, hitable* world, int depth)
 {
 	hit_record rec;
@@ -63,6 +82,15 @@ vec3 color_ambient(const ray& r, hitable* world, int depth)
 
 void random_scene(hitable** ret)
 {
+    g.colorFunc = color_ambient;
+
+    vec3 origin(13, 2, 3);
+    vec3 look(0,0,0);
+    float focus = 10;
+    float aperature = 0;
+    float vfov = 40;
+    g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+
 	int n = 500;
 	hitable** list = new hitable*[n + 1];
 	list[0] = new sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new lambertian(new checker_texture(new constant_texture(vec3(0.2f, 0.3f, 0.1f)), new constant_texture(vec3(0.9f, 0.9f, 0.9f)))));
@@ -103,7 +131,17 @@ void random_scene(hitable** ret)
 
 void two_spheres(hitable** ret)
 {
-	texture* checker = new checker_texture(new constant_texture(vec3(0.2f, 0.3f, 0.1f)), new constant_texture(vec3(0.9f, 0.9f, 0.9f)));
+    g.colorFunc = color_ambient;
+
+    vec3 origin(13, 2, 3);
+    vec3 look(0,0,0);
+    float focus = 10;
+    float aperature = 0;
+    float vfov = 40;
+    g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+
+
+    texture* checker = new checker_texture(new constant_texture(vec3(0.2f, 0.3f, 0.1f)), new constant_texture(vec3(0.9f, 0.9f, 0.9f)));
 	//int n = 50;
 	hitable** list = new hitable*[2];
 	list[0] = new sphere(vec3(0.0f, -10.0f, 0.0f), 10.0f, new lambertian(checker));
@@ -114,6 +152,16 @@ void two_spheres(hitable** ret)
 
 void two_perlin_spheres(hitable** ret)
 {
+    g.colorFunc = color_ambient;
+
+    vec3 origin(13, 2, 3);
+    vec3 look(0,0,0);
+    float focus = 10;
+    float aperature = 0;
+    float vfov = 40;
+    g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+
+
 	texture* pertext = new noise_texture(4.0f);
 	hitable** list = new hitable*[2];
 	list[0] = new sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new lambertian(pertext));
@@ -124,6 +172,16 @@ void two_perlin_spheres(hitable** ret)
 
 void earth(hitable** ret)
 {
+    g.colorFunc = color_ambient;
+
+    vec3 origin(13, 2, 3);
+    vec3 look(0,0,0);
+    float focus = 10;
+    float aperature = 0;
+    float vfov = 40;
+    g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+
+
 	int nx, ny, nn;
 	unsigned char* tex_data = stbi_load("earth_m.jpg", &nx, &ny, &nn, 0);
 	material* mat = new lambertian(new image_texture(tex_data, nx, ny));
@@ -133,6 +191,16 @@ void earth(hitable** ret)
 
 void simple_light(hitable** ret)
 {
+    g.colorFunc = color_emit_light;
+
+    vec3 origin(13, 2, 3);
+    vec3 look(0,0,0);
+    float focus = 10;
+    float aperature = 0;
+    float vfov = 40;
+    g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+
+
 	texture* pertext = new noise_texture(4.0f);
 	hitable** list = new hitable*[4];
 	list[0] = new sphere(vec3(0.0f, -1000.0f, 0.0f), 1000.0f, new lambertian(pertext));
@@ -145,6 +213,15 @@ void simple_light(hitable** ret)
 
 void cornell_box(hitable** ret)
 {
+    g.colorFunc = color_emit_light;
+
+    vec3 origin(278, 278, -800);
+    vec3 look(278,278,0);
+    float focus = 10;
+    float aperature = 0;
+    float vfov = 40;
+    g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+
 	hitable** list = new hitable*[8];
 	int i = 0;
 	material* red = new diffuse_light(new constant_texture(vec3(2, 0.1f, 0.1f)));
@@ -171,6 +248,16 @@ void cornell_box(hitable** ret)
 
 void cornell_smoke(hitable** ret)
 {
+    g.colorFunc = color_emit_light;
+
+    vec3 origin(278, 278, -800);
+    vec3 look(278,278,0);
+    float focus = 10;
+    float aperature = 0;
+    float vfov = 40;
+    g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+
+
     hitable** list = new hitable*[8];
     int i = 0;
     material* red = new lambertian(new constant_texture(vec3(0.65f, 0.05f, 0.05f)));
@@ -197,6 +284,15 @@ void cornell_smoke(hitable** ret)
 
 void final_scene(hitable** ret)
 {
+    g.colorFunc = color_emit_light;
+
+    vec3 origin(478, 278, -600);
+    vec3 look(278,278,0);
+    float focus = 10;
+    float aperature = 0;
+    float vfov = 40;
+    g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+
     int nb = 20;
     hitable **list = new hitable*[30];
     hitable **boxlist = new hitable*[400];
@@ -244,5 +340,65 @@ void final_scene(hitable** ret)
     list[l++] =   new translate(new rotate_y(new bvh_node(boxlist2,ns, 0.0, 1.0), 15), vec3(-100,270,395));
     *ret = new hitable_list(list,l);
 }
+
+void final_random_scene(hitable** ret)
+{
+    g.colorFunc = color_emit_light;
+
+    vec3 origin(478, 278, -600);
+    vec3 look(278,278,0);
+    float focus = 10;
+    float aperature = 0;
+    float vfov = 40;
+    g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+
+    int nb = 20;
+    hitable **list = new hitable*[30];
+    hitable **boxlist = new hitable*[400];
+    hitable **boxlist2 = new hitable*[1000];
+    //material *white = new lambertian( new constant_texture(vec3(0.73, 0.73, 0.73)) );
+    //material *ground = new lambertian( new constant_texture(vec3(0.48, 0.83, 0.53)) );
+    int l = 0;
+    int b = 0;
+    for (int i = 0; i < nb; i++)
+    {
+        for (int j = 0; j < nb; j++)
+        {
+            float w = 100;
+            float x0 = -1000 + i*w;
+            float z0 = -1000 + j*w;
+            float y0 = 0;
+            float x1 = x0 + w;
+            float y1 = 100*(rand48()+0.01);
+            float z1 = z0 + w;
+            boxlist[b++] = new box(vec3(x0,y0,z0), vec3(x1,y1,z1), new lambertian(new constant_texture(vec3(rand48()*rand48(), rand48()*rand48(), rand48()*rand48()))));
+        }
+    }
+    list[l++] = new bvh_node(boxlist, b, 0, 1);
+    material *light = new diffuse_light( new constant_texture(vec3(12, 12, 12)) );
+    list[l++] = new xz_rect(123, 423, 147, 412, 554, light);
+    vec3 center(400, 400, 200);
+    list[l++] = new moving_sphere(center, center+vec3(30, 0, 0), 0, 1, 50, new lambertian(new constant_texture(vec3(0.7, 0.3, 0.1))));
+    list[l++] = new sphere(vec3(260, 150, 45), 50, new dielectric(1.5));
+    list[l++] = new sphere(vec3(0, 150, 145), 50, new metal(vec3(0.8, 0.8, 0.9), 10.0));
+    hitable *boundary = new sphere(vec3(360, 150, 145), 70, new dielectric(1.5));
+    list[l++] = boundary;
+    list[l++] = new constant_medium(boundary, 0.2, new constant_texture(vec3(0.2, 0.4, 0.9)));
+    boundary = new sphere(vec3(0, 0, 0), 5000, new dielectric(1.5));
+    list[l++] = new constant_medium(boundary, 0.0001, new constant_texture(vec3(1.0, 1.0, 1.0)));
+    int nx, ny, nn;
+    unsigned char *tex_data = stbi_load("earth_m.jpg", &nx, &ny, &nn, 0);
+    material *emat =  new lambertian(new image_texture(tex_data, nx, ny));
+    list[l++] = new sphere(vec3(400,200, 400), 100, emat);
+    texture *pertext = new noise_texture(0.1);
+    list[l++] =  new sphere(vec3(220,280, 300), 80, new lambertian( pertext ));
+    int ns = 1000;
+    for (int j = 0; j < ns; j++) {
+        boxlist2[j] = new sphere(vec3(165*rand48(), 165*rand48(), 165*rand48()), 10, new lambertian(new constant_texture(vec3(rand48()*rand48(), rand48()*rand48(), rand48()*rand48()))));
+    }
+    list[l++] =   new translate(new rotate_y(new bvh_node(boxlist2,ns, 0.0, 1.0), 15), vec3(-100,270,395));
+    *ret = new hitable_list(list,l);
+}
+
 
 #endif // SCENESH

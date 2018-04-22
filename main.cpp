@@ -23,20 +23,7 @@ extern "C"
 #include <sys/resource.h>
 #endif
 #include "scenes.h"
-struct global_state
-{
-    int width, height, samples;
-    unsigned char* data;
-    unsigned int data_size;
-    int thread_count;
-    hitable* world;
-    vec3 (*colorFunc)(const ray& r, hitable* world, int depth);
-    camera* cam;
-    bool* thread_done;
-    std::string outputFile;
-};
 
-global_state g;
 
 void worker(int begin, int end, int index_start, int threadId)
 {
@@ -97,17 +84,19 @@ int main(int argc, char *argv[])
         SDL_Surface* surf;
         //int width, height;
 
-        if (argc == 5)
+        if (argc == 6)
         {
             g.width = atoi(argv[1]);
             g.height = atoi(argv[2]);
             g.samples = atoi(argv[3]);
-            g.outputFile = argv[4];
+            g.scene = RANDOM;
+            g.outputFile = argv[5];
         }
         else
         {
             g.width = g.height = 512;
             g.samples = 300;
+            g.scene = FINAL_RANDOM;
             g.outputFile = "test.png";
         }
 
@@ -115,17 +104,17 @@ int main(int argc, char *argv[])
         //vec3 origin(478, 278, -600);
         //vec3 look(278, 278, 0);
 
-        vec3 origin(13, 2, 3);
-        vec3 look(0,0,0);
-        float focus = 10;
-        float aperature = 0;
-        float vfov = 40;
-        g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
+        //vec3 origin(13, 2, 3);
+        //vec3 look(0,0,0);
+        //float focus = 10;
+        //float aperature = 0;
+        //float vfov = 40;
+        //g.cam = new camera(origin, look, vec3(0,1,0), vfov, float(g.width)/float(g.height), aperature, focus, 0, 1);
 
         //g.samples = 7777;
-        g.colorFunc = color_ambient;
+        //g.colorFunc = color_ambient;
 
-        random_scene(&g.world);
+        final_random_scene(&g.world);
 
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());

@@ -36,6 +36,29 @@ inline float perlin_interp(vec3 c[2][2][2], float u, float v, float w)
 class perlin
 {
 public:
+    ~perlin()
+    {
+        if (ranvec)
+        {
+            delete[] ranvec;
+            ranvec = nullptr;
+        }
+        if (perm_x)
+        {
+            delete[] perm_x;
+            ranvec = nullptr;
+        }
+        if (perm_y)
+        {
+            delete[] perm_y;
+            perm_y = nullptr;
+        }
+        if (perm_z)
+        {
+            delete[] perm_z;
+            perm_z = nullptr;
+        }
+    }
 	float noise(const vec3& p) const
 	{
 		float u = p.x() - floor(p.x());
